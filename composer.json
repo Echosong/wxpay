@@ -1,7 +1,7 @@
 {
     "name": "echosong/wxpay",
     "type": "library",
-    "description": "微信支付 PHP SDK",
+    "description": "微信企业现金红包， 裂变红包，转账零钱",
     "keywords": [
         "wechat",
         "pay",
