@@ -72,14 +72,25 @@ class WXPay
         foreach ($data as $k => $v) {
             $newData[$k] = $v;
         }
+
         // 填充
-        $newData['appid'] = $this->appId;
+        if(!$newData['wxappid']){
+            $newData['appid'] = $this->appId;
+            $newData['sign_type'] = $this->signType;
+        }
         $newData['mch_id'] = $this->mchId;
         $newData['nonce_str'] = WXPayUtil::generateNonceStr();
-        $newData['sign_type'] = $this->signType;
+
         $sign = WXPayUtil::generateSignature($newData, $this->key, $this->signType);
-        $newData['sign'] = $sign;
-        return $newData;
+        $keys = array_keys($newData);
+        asort($keys);  // 排序
+        $sortData = [];
+        foreach ($keys as $ks){
+            $sortData[$ks] = $newData[$ks];
+        }
+
+        $sortData['sign'] = $sign;
+        return $sortData;
     }
 
     /**
@@ -139,6 +150,7 @@ class WXPay
         if ($timeout == null) {
             $timeout = $this->timeout;
         }
+
         $reqXml = WXPayUtil::array2xml($reqData);
         $ch = curl_init();
         //设置超时
@@ -174,6 +186,7 @@ class WXPay
         if ($timeout == null) {
             $timeout = $this->timeout;
         }
+
         $reqXml = WXPayUtil::array2xml($reqData);
         $ch = curl_init();
         //设置超时
@@ -300,22 +313,6 @@ class WXPay
         return $this->processResponseXml($this->requestWithCert($url, $this->fillRequestData($reqData), $timeout));
     }
 
-    /**
-     * 退款查询
-     * @param array $reqData 请求数据
-     * @param null|float $timeout 网络超时时间，单位是毫秒
-     * @return array wxpay返回数据
-     */
-    public function refundQuery($reqData, $timeout=null) {
-        if ($this->useSandbox) {
-            $url = WXPayConstants::SANDBOX_REFUNDQUERY_URL;
-        }
-        else {
-            $url = WXPayConstants::REFUNDQUERY_URL;
-        }
-        return $this->processResponseXml($this->requestWithoutCert($url, $this->fillRequestData($reqData), $timeout));
-    }
-
 
     /**
      * 现金红包
@@ -330,7 +327,11 @@ class WXPay
         else {
             $url = WXPayConstants::BOUNS_URL;
         }
-        return $this->processResponseXml($this->requestWithoutCert($url, $this->fillRequestData($reqData), $timeout));
+        $reqData['wxappid'] = $this->appId;
+        $this->signType=  WXPayConstants::SIGN_TYPE_MD5;
+
+
+        return $this->processResponseXml($this->requestWithCert($url,$this->fillRequestData($reqData), $timeout));
     }
 
     /**
@@ -340,6 +341,7 @@ class WXPay
      * @return array wxpay返回数据
      */
     public  function fissionBouns($reqData, $timeout= null){
+        $reqData['wxappid'] = $this->appId;
         if ($this->useSandbox) {
             $url = WXPayConstants::SANDBOX_FISSIONBOUNS_URL;
         }
@@ -356,11 +358,28 @@ class WXPay
      * @return array wxpay返回数据
      */
     public function transfers($reqData, $timeout= null){
+        $reqData['wxappid'] = $this->appId;
         if ($this->useSandbox) {
             $url = WXPayConstants::SANDBOX_TRANSFERS_URL;
         }
         else {
             $url = WXPayConstants::TRANSFERS_URL;
+        }
+        return $this->processResponseXml($this->requestWithoutCert($url, $this->fillRequestData($reqData), $timeout));
+    }
+
+    /**
+     * 退款查询
+     * @param array $reqData 请求数据
+     * @param null|float $timeout 网络超时时间，单位是毫秒
+     * @return array wxpay返回数据
+     */
+    public function refundQuery($reqData, $timeout=null) {
+        if ($this->useSandbox) {
+            $url = WXPayConstants::SANDBOX_REFUNDQUERY_URL;
+        }
+        else {
+            $url = WXPayConstants::REFUNDQUERY_URL;
         }
         return $this->processResponseXml($this->requestWithoutCert($url, $this->fillRequestData($reqData), $timeout));
     }
