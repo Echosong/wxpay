@@ -9,7 +9,7 @@
         "wxpay"
     ],
     "license": "MIT",
-    "version": "1.0.1",
+    "version": "v1.0",
     "autoload": {
         "psr-4": {"WXPay\\": "src/"}
     }
