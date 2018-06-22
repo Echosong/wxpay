@@ -11,6 +11,6 @@
     "license": "MIT",
     "version": "v1.0",
     "autoload": {
-        "psr-4": {"WXPay\\": "src/"}
+        "psr-4": {"Echosong\\WXPay\\": "src/"}
     }
 }
