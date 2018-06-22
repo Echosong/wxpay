@@ -1,6 +1,7 @@
 <?php
 
-namespace WXPay;
+namespace Echosong\WXPay;
+
 
 class WXPayConstants
 {
