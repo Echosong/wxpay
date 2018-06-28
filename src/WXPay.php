@@ -49,6 +49,9 @@ class WXPay
             return $data;
         }
         elseif ($return_code === $SUCCESS) {
+            if(isset($data['wxappid'])){
+                return $data;
+            }
             if ($this->isResponseSignatureValid($data)) {
                 return $data;
             }
