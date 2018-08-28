@@ -14,4 +14,6 @@
 |transfers | 企业付款 |
 
 #安装
+```
 composer require echosong/wxpay:dev-master
+```
