@@ -49,7 +49,10 @@ class WXPay
             return $data;
         }
         elseif ($return_code === $SUCCESS) {
-            if ($this->isResponseSignatureValid($data) && empty($data['wxappid'])) {
+            if(isset($data['wxappid'])){
+                return $data;
+            }
+            if ($this->isResponseSignatureValid($data)) {
                 return $data;
             }
             else {
@@ -72,16 +75,25 @@ class WXPay
         foreach ($data as $k => $v) {
             $newData[$k] = $v;
         }
+
         // 填充
         if(!$newData['wxappid']){
             $newData['appid'] = $this->appId;
+            $newData['sign_type'] = $this->signType;
         }
         $newData['mch_id'] = $this->mchId;
         $newData['nonce_str'] = WXPayUtil::generateNonceStr();
-        $newData['sign_type'] = $this->signType;
+
         $sign = WXPayUtil::generateSignature($newData, $this->key, $this->signType);
-        $newData['sign'] = $sign;
-        return $newData;
+        $keys = array_keys($newData);
+        asort($keys);  // 排序
+        $sortData = [];
+        foreach ($keys as $ks){
+            $sortData[$ks] = $newData[$ks];
+        }
+
+        $sortData['sign'] = $sign;
+        return $sortData;
     }
 
     /**
@@ -141,6 +153,7 @@ class WXPay
         if ($timeout == null) {
             $timeout = $this->timeout;
         }
+
         $reqXml = WXPayUtil::array2xml($reqData);
         $ch = curl_init();
         //设置超时
@@ -176,6 +189,7 @@ class WXPay
         if ($timeout == null) {
             $timeout = $this->timeout;
         }
+
         $reqXml = WXPayUtil::array2xml($reqData);
         $ch = curl_init();
         //设置超时
@@ -317,7 +331,10 @@ class WXPay
             $url = WXPayConstants::BOUNS_URL;
         }
         $reqData['wxappid'] = $this->appId;
-        return $this->processResponseXml($this->requestWithoutCert($url, $reqData, $timeout));
+        $this->signType=  WXPayConstants::SIGN_TYPE_MD5;
+
+
+        return $this->processResponseXml($this->requestWithCert($url,$this->fillRequestData($reqData), $timeout));
     }
 
     /**
